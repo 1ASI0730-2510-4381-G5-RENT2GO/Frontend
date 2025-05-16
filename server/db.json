@@ -18,7 +18,7 @@
       "model": "Kia Sportage",
       "category": "SUV",
       "image": "https://images.pexels.com/photos/1592384/pexels-photo-1592384.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      "price": 55,
+      "price": 75,
       "features": [
         "5 pasajeros",
         "A/C",
@@ -57,7 +57,7 @@
       "model": "Suzuki Swift",
       "category": "Económico",
       "image": "https://images.pexels.com/photos/1592261/pexels-photo-1592261.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
-      "price": 32,
+      "price": 30,
       "features": [
         "5 pasajeros",
         "A/C",
@@ -78,5 +78,6 @@
         "5 maletas"
       ]
     }
+
   ]
 }
