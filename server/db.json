@@ -1,0 +1,83 @@
+{
+  "vehicles": [
+    {
+      "id": "1",
+      "model": "Toyota Yaris",
+      "category": "Económico",
+      "image": "https://images.pexels.com/photos/1638459/pexels-photo-1638459.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      "price": 35,
+      "features": [
+        "5 pasajeros",
+        "A/C",
+        "Manual",
+        "4 maletas"
+      ]
+    },
+    {
+      "id": "2",
+      "model": "Kia Sportage",
+      "category": "SUV",
+      "image": "https://images.pexels.com/photos/1592384/pexels-photo-1592384.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      "price": 75,
+      "features": [
+        "5 pasajeros",
+        "A/C",
+        "Automático",
+        "5 maletas"
+      ]
+    },
+    {
+      "id": "3",
+      "model": "BMW Serie 3",
+      "category": "Lujo",
+      "image": "https://images.pexels.com/photos/892522/pexels-photo-892522.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      "price": 95,
+      "features": [
+        "5 pasajeros",
+        "A/C",
+        "Automático",
+        "3 maletas"
+      ]
+    },
+    {
+      "id": "4",
+      "model": "Hyundai H1",
+      "category": "Vans",
+      "image": "https://images.pexels.com/photos/2533092/pexels-photo-2533092.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      "price": 75,
+      "features": [
+        "12 pasajeros",
+        "A/C",
+        "Manual",
+        "10 maletas"
+      ]
+    },
+    {
+      "id": "5",
+      "model": "Suzuki Swift",
+      "category": "Económico",
+      "image": "https://images.pexels.com/photos/1592261/pexels-photo-1592261.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      "price": 30,
+      "features": [
+        "5 pasajeros",
+        "A/C",
+        "Manual",
+        "3 maletas"
+      ]
+    },
+    {
+      "id": "6",
+      "model": "Toyota RAV4",
+      "category": "SUV",
+      "image": "https://images.pexels.com/photos/13001670/pexels-photo-13001670.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      "price": 60,
+      "features": [
+        "5 pasajeros",
+        "A/C",
+        "Automático",
+        "5 maletas"
+      ]
+    }
+
+  ]
+}
