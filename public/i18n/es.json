@@ -1,0 +1,71 @@
+{
+  "home": {
+    "welcome": "Bienvenido a nuestra plataforma de alquiler de vehículos",
+    "subtitle": "Elige una opción para comenzar",
+    "galleryDesc": "Explora los vehículos disponibles para alquilar",
+    "rentalsDesc": "Consulta tus alquileres actuales y pasados",
+    "addDesc": "Agrega tu vehículo a nuestra plataforma"
+  },
+  "navbar": {
+    "language": "Seleccionar idioma"
+  },
+  "notFound": {
+    "title": "Página no encontrada",
+    "description": "Lo sentimos, la página que buscas no existe.",
+    "goHome": "Volver al inicio"
+  },
+  "footer": {
+    "rights": "Todos los derechos reservados.",
+    "privacy": "Política de Privacidad",
+    "terms": "Términos del Servicio",
+    "contact": "Contacto"
+  },
+  "menu": {
+    "gallery": "Galería de Vehículos",
+    "rentals": "Mis Alquileres",
+    "add": "Agregar Vehículo"
+  },
+
+
+  "gallery": {
+    "reserve": "Reservar",
+    "reservationSuccess": "¡Vehículo reservado con éxito!",
+    "alreadyReserved": "Este vehículo ya está reservado.",
+    "refreshCars": "Actualizar autos",
+    "loading": "Cargando autos",
+    "noCars": "No hay autos disponibles",
+    "price": "Precio"
+  },
+  "myRentals": {
+    "release": "Liberar",
+    "releaseSuccess": "¡Vehículo liberado con éxito!",
+    "title": "Mis Alquileres",
+    "noRentals": "Aún no has alquilado ningún vehículo.",
+    "price": "Precio"
+  },
+  "addVehicle": {
+    "title": "Agregar Vehículo",
+    "model": "Modelo",
+    "pricePerDay": "Precio por Día",
+    "imageUrl": "URL de la Imagen",
+    "add": "Agregar Vehículo",
+    "success": "¡Vehículo agregado con éxito!",
+    "error": "Por favor, completa todos los campos correctamente.",
+    "modelPlaceholder": "ej. Toyota Corolla",
+    "pricePlaceholder": "ej. 100",
+    "imagePlaceholder": "ej. https://example.com/car.jpg",
+    "category": "Categoría",
+    "categoryPlaceholder": "Selecciona una categoría",
+    "sedan": "Sedán",
+    "suv": "SUV",
+    "hatchback": "Hatchback",
+    "convertible": "Convertible",
+    "features": "Características",
+    "featuresPlaceholder": "Enumera las características del vehículo"
+  },
+  "buttons": {
+    "backToGallery": "Volver a la Galería",
+    "backToMenu": "Volver al Menú"
+  }
+
+}

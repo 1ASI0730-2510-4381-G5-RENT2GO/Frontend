@@ -1,0 +1,71 @@
+{
+  "home": {
+    "welcome": "Welcome to our vehicle rental platform",
+    "subtitle": "Choose an option to get started",
+    "galleryDesc": "Browse vehicles available for rent",
+    "rentalsDesc": "View your current and past rentals",
+    "addDesc": "Add your vehicle to our platform"
+  },
+  "navbar": {
+    "language": "Select language"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "Sorry, the page you are looking for does not exist.",
+    "goHome": "Go back to home"
+  },
+  "footer": {
+    "rights": "All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact"
+  },
+  "menu": {
+    "gallery": "Vehicle Gallery",
+    "rentals": "My Rentals",
+    "add": "Add Vehicle"
+  },
+
+
+  "gallery": {
+    "reserve": "Reserve",
+    "reservationSuccess": "Vehicle reserved successfully!",
+    "alreadyReserved": "This vehicle is already reserved.",
+    "refreshCars": "Refresh Cars",
+    "loading": "Loading cars",
+    "noCars": "No cars available",
+    "price": "Price"
+  },
+  "myRentals": {
+    "release": "Release",
+    "releaseSuccess": "Vehicle released successfully!",
+    "title": "My Rentals",
+    "noRentals": "No vehicles rented yet.",
+    "price": "Price"
+  },
+  "addVehicle": {
+    "title": "Add Vehicle",
+    "model": "Model",
+    "pricePerDay": "Price per Day",
+    "imageUrl": "Image URL",
+    "add": "Add Vehicle",
+    "success": "Vehicle added successfully!",
+    "error": "Please fill all the fields correctly.",
+    "modelPlaceholder": "e.g. Toyota Corolla",
+    "pricePlaceholder": "e.g. 100",
+    "imagePlaceholder": "e.g. https://example.com/car.jpg",
+    "category": "Category",
+    "categoryPlaceholder": "Select a category",
+    "sedan": "Sedan",
+    "suv": "SUV",
+    "hatchback": "Hatchback",
+    "convertible": "Convertible",
+    "features": "Features",
+    "featuresPlaceholder": "List the features of the vehicle"
+  },
+  "buttons": {
+    "backToMenu": "Back to Menu",
+    "backToGallery": "Back to Gallery"
+  }
+
+}
