@@ -1,0 +1,29 @@
+{
+  "auth": {
+    "login_title": "Sign In",
+    "login_subtitle": "Please enter your credentials",
+    "login_button": "Login",
+    "register": "Register",
+    "register_title": "Create Account",
+    "register_subtitle": "Fill the form to sign up",
+    "register_button": "Create Account",
+    "name_placeholder": "Your name",
+    "email_placeholder": "Email address",
+    "password_placeholder": "Password",
+    "repeat_password_placeholder": "Repeat password",
+    "forgot_title": "Forgot your password?",
+    "forgot_subtitle": "Enter your email to get a code",
+    "send_code_button": "Send code",
+    "remember_password": "Remember your password? Log in",
+    "reset_title": "Reset password",
+    "reset_subtitle": "Enter your new password",
+    "reset_button": "Reset",
+    "verify_title": "Verify your account",
+    "verify_subtitle": "Enter the code sent to your email",
+    "code_placeholder": "Verification code",
+    "verify_button": "Verify",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?",
+    "loading": "Loading..."
+  }
+}

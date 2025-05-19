@@ -1,0 +1,29 @@
+{
+  "auth": {
+    "login_title": "Iniciar sesión",
+    "login_subtitle": "Por favor introduce tus credenciales",
+    "login_button": "Entrar",
+    "register": "Regístrate",
+    "register_title": "Crear cuenta",
+    "register_subtitle": "Completa el formulario para registrarte",
+    "register_button": "Crear cuenta",
+    "name_placeholder": "Tu nombre",
+    "email_placeholder": "Correo electrónico",
+    "password_placeholder": "Contraseña",
+    "repeat_password_placeholder": "Repetir contraseña",
+    "forgot_title": "¿Olvidaste tu contraseña?",
+    "forgot_subtitle": "Introduce tu correo para recibir el código",
+    "send_code_button": "Enviar código",
+    "remember_password": "¿Recuerdas tu contraseña? Inicia sesión",
+    "reset_title": "Restablecer contraseña",
+    "reset_subtitle": "Introduce tu nueva contraseña",
+    "reset_button": "Restablecer",
+    "verify_title": "Verifica tu cuenta",
+    "verify_subtitle": "Introduce el código recibido en tu correo",
+    "code_placeholder": "Código de verificación",
+    "verify_button": "Verificar",
+    "no_account": "¿No tienes una cuenta?",
+    "have_account": "¿Ya tienes una cuenta?",
+    "loading": "Cargando..."
+  }
+}
