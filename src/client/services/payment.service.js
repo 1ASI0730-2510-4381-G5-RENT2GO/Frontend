@@ -21,11 +21,7 @@ export const paymentService = {
         }
     },
 
-    /**
-     * Agrega un nuevo método de pago
-     * @param {Object} paymentMethod - Datos del método de pago
-     * @returns {Promise<Object>} - Método de pago creado
-     */
+
     async addPaymentMethod(paymentMethod) {
         try {
             const response = await clientAPI.post('/payment-methods', paymentMethod);
@@ -36,11 +32,6 @@ export const paymentService = {
         }
     },
 
-    /**
-     * Elimina un método de pago
-     * @param {string} id - ID del método de pago
-     * @returns {Promise<void>}
-     */
     async deletePaymentMethod(id) {
         try {
             await clientAPI.delete(`/payment-methods/${id}`);

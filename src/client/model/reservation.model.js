@@ -17,7 +17,6 @@ export class Reservation {
      * @param {number} totalDays - Total de días de reserva
      * @param {number} pricePerDay - Precio por día
      * @param {number} totalAmount - Monto total de la reserva
-     * @param {string} paymentMethod - Método de pago utilizado
      * @param {string} paymentStatus - Estado del pago
      * @param {string} reservationStatus - Estado de la reserva
      * @param {string} createdAt - Fecha de creación de la reserva
