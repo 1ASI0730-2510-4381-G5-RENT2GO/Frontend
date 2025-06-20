@@ -1,6 +1,5 @@
 <template>
   <div class="flex items-center space-x-2">
-    <!-- Botón modo claro -->
     <button
         @click="setTheme('light')"
         :class="[base, isLight ? active : inactive]"
@@ -9,7 +8,6 @@
       <i class="pi pi-sun" />
     </button>
 
-    <!-- Botón modo oscuro -->
     <button
         @click="setTheme('dark')"
         :class="[base, isDark ? active : inactive]"
@@ -23,10 +21,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 
-/* Estado reactivo para el tema */
 const theme = ref('light')
 
-/* Detectar y aplicar el tema al montar */
 onMounted(() => {
   const stored = localStorage.getItem('theme')
   if (stored) {
@@ -37,25 +33,21 @@ onMounted(() => {
   applyTheme(theme.value)
 })
 
-/* Cambiar tema */
 function setTheme(selected) {
   theme.value = selected
   localStorage.setItem('theme', selected)
   applyTheme(selected)
 }
 
-/* Añadir o quitar la clase .dark en <html> */
 function applyTheme(mode) {
   const html = document.documentElement
   mode === 'dark' ? html.classList.add('dark')
       : html.classList.remove('dark')
 }
 
-/* Computados */
 const isDark  = computed(() => theme.value === 'dark')
 const isLight = computed(() => theme.value === 'light')
 
-/* Clases Tailwind ------------------------------------------------------ */
 const base =
     'flex items-center justify-center h-9 w-9 rounded-full border ' +
     'transition-colors duration-200 focus:outline-none'

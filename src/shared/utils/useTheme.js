@@ -9,7 +9,6 @@ export function useTheme() {
         document.documentElement.classList.toggle('dark', val === 'dark')
     }
 
-    // Detectar preferencia inicial
     onMounted(() => {
         const fromLS = localStorage.getItem('theme')
         if (fromLS) setTheme(fromLS)

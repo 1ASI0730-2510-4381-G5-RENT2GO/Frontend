@@ -1,70 +1,95 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { authGuard } from './guards';
 
-import AuthLayout from "@/shared/layouts/AuthLayout.vue";
-import MainLayout from '@/shared/layouts/MainLayout.vue';
+import AuthLayoutComponent from "@/shared/layouts/auth-layout.component.vue";
+import MainLayoutComponent from '@/shared/layouts/main-layout.component.vue';
 
-import Login from "@/domains/auth/views/Login.vue";
-import Register from "@/domains/auth/views/Register.vue";
-import ForgotPassword from "@/domains/auth/views/ForgotPassword.vue";
-import ResetPassword from "@/domains/auth/views/ResetPassword.vue";
-import VerifyCode from "@/domains/auth/views/VerifyCode.vue";
+import UserAccountViewComponent from "@/shared/pages/user-account-view.component.vue";
+import NotFoundViewComponent from "@/shared/pages/not-found-view.component.vue";
 
-import ClientDashboard from '@/domains/client/views/DashboardView.vue';
+import LoginViewComponentView from "@/auth/views/login-view.component.vue";
+import RegisterViewComponentView from "@/auth/views/register-view.component.vue";
+import ForgotPasswordViewComponentView from "@/auth/views/forgot-password-view.component.vue";
+import ResetPasswordViewComponentView from "@/auth/views/reset-password-view.component.vue";
+import VerifyCodeViewComponentView from "@/auth/views/verify-code-view.component.vue";
 
-import ProviderDashboard from '@/domains/provider/views/DashboardView.vue';
+import HomeViewComponent from '@/client/pages/home-view.component.vue';
+import SearchViewComponent from '@/client/pages/search-view.component.vue';
+import ClientReservationsViewComponent from '@/client/pages/reservations-view.component.vue';
+import ClientReservationDetailViewComponent from '@/client/pages/reservation-detail-view.component.vue';
+import ReservationEditViewComponent from "@/client/pages/reservation-edit-view.component.vue";
+import PaymentMethodsViewComponent from '@/client/pages/payment-methods-view.component.vue';
+import ClientVehicleDetailViewComponent from '@/client/pages/vehicle-detail-view.component.vue';
+import CheckoutViewComponent from '@/client/pages/checkout-view.component.vue';
 
-import DashboardView from "@/domains/admin/views/DashboardView.vue";
-import ApprovalView from '@/domains/admin/views/ApprovalView.vue';
-import UsersView from '@/domains/admin/views/UsersView.vue';
-import CommissionsView from '@/domains/admin/views/CommissionsView.vue';
-
+import DashboardViewComponent from '@/provider/pages/dashboard-view.component.vue';
+import VehiclesViewComponent from '@/provider/pages/vehicles-view.component.vue';
+import AddVehicleViewComponent from '@/provider/pages/add-vehicle-view.component.vue';
+import ProviderReservationsViewComponent from '@/provider/pages/reservations-view.component.vue';
+import ProviderReservationDetailViewComponent from '@/provider/pages/reservation-detail-view.component.vue';
+import EarningsViewComponent from '@/provider/pages/earnings-view.component.vue';
 
 const routes = [
     {
         path: "/",
-        component: AuthLayout,
+        component: AuthLayoutComponent,
         children: [
             { path: "", redirect: "/login" },
-            { path: "login", name: "Login", component: Login },
-            { path: "register", name: "Register", component: Register },
-            { path: "forgot-password", name: "ForgotPassword", component: ForgotPassword },
-            { path: "reset-password", name: "ResetPassword", component: ResetPassword },
-            { path: "verify-code", name: "VerifyCode", component: VerifyCode },
+            { path: "login", name: "Login", component: LoginViewComponentView },
+            { path: "register", name: "Register", component: RegisterViewComponentView },
+            { path: "forgot-password", name: "ForgotPassword", component: ForgotPasswordViewComponentView },
+            { path: "reset-password", name: "ResetPassword", component: ResetPasswordViewComponentView },
+            { path: "verify-code", name: "VerifyCode", component: VerifyCodeViewComponentView },
         ],
     },
+
     {
         path: '/client',
-        component: MainLayout,
+        component: MainLayoutComponent,
         meta: {requiresAuth: true, role: 'client'},
         children: [
-            {path: 'dashboard', component: ClientDashboard},
+            { path: '', redirect: 'home' },
+            { path: 'home', name: 'clientHome', component: HomeViewComponent, meta: { title: 'navigation.home' }},
+            { path: 'search', name: 'SearchCars', component: SearchViewComponent, meta: { title: 'navigation.search' }},
+            { path: 'reservations', name: 'MyReservations', component: ClientReservationsViewComponent, meta: { title: 'navigation.my_reservations' }},
+            { path: 'payment-methods', name: 'PaymentMethods', component: PaymentMethodsViewComponent, meta: { title: 'navigation.payment_methods' }},
+            { path: 'car/:id', name: 'car-detail', component: ClientVehicleDetailViewComponent, meta: { title: 'navigation.vehicle_detail' }},
+            { path: 'checkout/:id', name: 'checkout', component: CheckoutViewComponent, meta: { title: 'navigation.checkout' }},
+            { path: 'my-reservations/:id', name: 'ClientReservationDetail', component: ClientReservationDetailViewComponent, meta: { title: 'navigation.reservation_detail' }},
+            { path: 'my-reservations/:id/edit', name: 'ClientReservationEdit', component: ReservationEditViewComponent, meta: { title: 'navigation.edit_reservation' }},
+            { path: 'account', name: 'ClientAccount', component: UserAccountViewComponent, meta: { title: 'navigation.my_account' }},
         ]
     },
+
     {
         path: '/provider',
-        component: MainLayout,
+        component: MainLayoutComponent,
         meta: {requiresAuth: true, role: 'provider'},
         children: [
-            {path: 'dashboard', component: ProviderDashboard},
+            { path: '', redirect: 'dashboard' },
+            { path: 'dashboard', name: 'providerDashboard', component: DashboardViewComponent, meta: { title: 'navigation.dashboard' }},
+            { path: 'vehicles', name: 'providerVehicles', component: VehiclesViewComponent, meta: { title: 'navigation.my_vehicles' }},
+            { path: 'vehicles/add', name: 'providerAddVehicle', component: AddVehicleViewComponent, meta: { title: 'navigation.add_vehicle' }},
+            { path: 'reservations', name: 'providerReservations', component: ProviderReservationsViewComponent, meta: { title: 'navigation.reservations' }},
+            { path: 'reservations/:id', name: 'ProviderReservationDetail', component: ProviderReservationDetailViewComponent, meta: { title: 'navigation.reservation_detail' }},
+            { path: 'earnings', name: 'providerEarnings', component: EarningsViewComponent, meta: { title: 'navigation.earnings' }},
+            { path: 'account', name: 'ProviderAccount', component: UserAccountViewComponent, meta: { title: 'navigation.my_account' }},
         ]
     },
+
     {
-        path: '/admin',
-        component: MainLayout,
-        meta: {requiresAuth: true, role: 'admin'},
-        children: [
-            {path: 'dashboard', name: 'AdminDashboard', component: DashboardView, meta: { title: 'Dashboard' }},
-            {path: 'vehicles', name: 'Vehicles', component: ApprovalView, meta: { title: 'Vehículos' }},
-            {path: 'users', name: 'Users', component: UsersView, meta: { title: 'Usuarios' }},
-            {path: 'commissions', name: 'Commissions', component: CommissionsView, meta: { title: 'Comisiones' }}
-        ]
+        path: "/:pathMatch(.*)*",
+        name: "NotFound",
+        component: NotFoundViewComponent,
+        meta: { title: 'navigation.not_found' }
     },
-    { path: "/:pathMatch(.*)*", redirect: "/login" },
 ];
 
 const router = createRouter({
     history: createWebHistory(),
     routes,
 });
+
+router.beforeEach(authGuard);
 
 export default router;
