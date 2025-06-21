@@ -25,6 +25,7 @@ import CheckoutViewComponent from '@/client/pages/checkout-view.component.vue';
 import DashboardViewComponent from '@/provider/pages/dashboard-view.component.vue';
 import VehiclesViewComponent from '@/provider/pages/vehicles-view.component.vue';
 import AddVehicleViewComponent from '@/provider/pages/add-vehicle-view.component.vue';
+import EditVehicleViewComponent from '@/provider/pages/edit-vehicle-view.component.vue';
 import ProviderReservationsViewComponent from '@/provider/pages/reservations-view.component.vue';
 import ProviderReservationDetailViewComponent from '@/provider/pages/reservation-detail-view.component.vue';
 import EarningsViewComponent from '@/provider/pages/earnings-view.component.vue';
@@ -70,6 +71,7 @@ const routes = [
             { path: 'dashboard', name: 'providerDashboard', component: DashboardViewComponent, meta: { title: 'navigation.dashboard' }},
             { path: 'vehicles', name: 'providerVehicles', component: VehiclesViewComponent, meta: { title: 'navigation.my_vehicles' }},
             { path: 'vehicles/add', name: 'providerAddVehicle', component: AddVehicleViewComponent, meta: { title: 'navigation.add_vehicle' }},
+            { path: 'vehicles/edit/:id', name: 'providerEditVehicle', component: EditVehicleViewComponent, meta: { title: 'navigation.edit_vehicle' }},
             { path: 'reservations', name: 'providerReservations', component: ProviderReservationsViewComponent, meta: { title: 'navigation.reservations' }},
             { path: 'reservations/:id', name: 'ProviderReservationDetail', component: ProviderReservationDetailViewComponent, meta: { title: 'navigation.reservation_detail' }},
             { path: 'earnings', name: 'providerEarnings', component: EarningsViewComponent, meta: { title: 'navigation.earnings' }},

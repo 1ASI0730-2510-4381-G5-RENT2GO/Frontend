@@ -3,12 +3,32 @@
     <div class="max-w-6xl mx-auto">
       <h1 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-8">Completar reserva</h1>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div v-if="loading" class="flex justify-center py-12">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
+
+      <div v-else-if="error" class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 text-center">
+        <div class="text-6xl text-red-500 flex justify-center mb-4">
+          <i class="pi pi-exclamation-triangle"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">Error al cargar el vehículo</h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">
+          No se pudo cargar la información del vehículo para completar la reserva.
+        </p>
+        <router-link
+          to="/client/search"
+          class="bg-primary-600 hover:bg-primary-700 text-white py-2 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors text-sm font-medium"
+        >
+          Volver a búsqueda
+        </router-link>
+      </div>
+
+      <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div class="lg:col-span-2 space-y-6">
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
             <div class="flex p-4 border-b border-gray-200 dark:border-gray-700">
               <img
-                  :src="car.imageUrl || '/img/car-placeholder.jpg'"
+                  :src="car.images && car.images.length > 0 ? car.images[0] : '/img/car-placeholder.jpg'"
                   :alt="car.model"
                   class="w-24 h-16 rounded-xl object-cover mr-4"
               >
@@ -40,74 +60,92 @@
           </div>
 
           <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
-            <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-6">Datos personales</h2>
+            <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Datos personales</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Esta reserva se realizará a tu nombre como titular. La información se ha completado desde tu perfil.
+            </p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Nombre
+                  Nombre <span class="text-red-500">*</span>
                 </label>
                 <input
                     v-model="customerInfo.firstName"
                     type="text"
-                    class="w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100"
+                    class="w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100"
+                    readonly
                 >
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Apellidos
+                  Apellidos <span class="text-red-500">*</span>
                 </label>
                 <input
                     v-model="customerInfo.lastName"
                     type="text"
-                    class="w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100"
+                    class="w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100"
+                    readonly
                 >
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Email
+                  Email <span class="text-red-500">*</span>
                 </label>
                 <input
                     v-model="customerInfo.email"
                     type="email"
-                    class="w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100"
+                    class="w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100"
+                    readonly
                 >
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Teléfono
+                  Teléfono <span class="text-red-500">*</span>
                 </label>
                 <input
                     v-model="customerInfo.phone"
                     type="tel"
                     class="w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100"
+                    :class="{'bg-gray-100 dark:bg-gray-800': customerInfo.phone}"
+                    :readonly="!!customerInfo.phone"
+                    placeholder="Ingresa tu número de teléfono"
                 >
+                <p v-if="!customerInfo.phone" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Por favor, completa tu número de teléfono para la reserva
+                </p>
               </div>
             </div>
 
             <div class="mt-4">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Dirección
+                Dirección de recogida <span class="text-red-500">*</span>
               </label>
               <input
                   v-model="customerInfo.address"
                   type="text"
                   class="w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100"
+                  :class="{'bg-gray-100 dark:bg-gray-800': customerInfo.address}"
+                  :readonly="!!customerInfo.address"
+                  placeholder="Ingresa la dirección de recogida"
               >
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-              <div class="col-span-2">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+              <div class="md:col-span-2">
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Ciudad
+                  Ciudad <span class="text-red-500">*</span>
                 </label>
                 <input
                     v-model="customerInfo.city"
                     type="text"
                     class="w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100"
+                    :class="{'bg-gray-100 dark:bg-gray-800': customerInfo.city}"
+                    :readonly="!!customerInfo.city"
+                    placeholder="Ingresa tu ciudad"
                 >
               </div>
 
@@ -119,24 +157,21 @@
                     v-model="customerInfo.zipCode"
                     type="text"
                     class="w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100"
+                    :class="{'bg-gray-100 dark:bg-gray-800': customerInfo.zipCode}"
+                    :readonly="!!customerInfo.zipCode"
+                    placeholder="Código postal"
                 >
               </div>
-
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  País
-                </label>
-                <select
-                    v-model="customerInfo.country"
-                    class="w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100"
-                >
-                  <option value="ES">España</option>
-                  <option value="FR">Francia</option>
-                  <option value="PT">Portugal</option>
-                  <option value="DE">Alemania</option>
-                  <option value="IT">Italia</option>
-                </select>
-              </div>
+            </div>
+            
+            <div class="mt-4 text-right">
+              <button 
+                type="button" 
+                @click="editProfile" 
+                class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+              >
+                Editar perfil
+              </button>
             </div>
           </div>
 
@@ -167,12 +202,76 @@
             </div>
           </div>
 
-          <PaymentFormComponent
-              :amount="totalPrice"
-              :reservation-id="reservationId"
-              @payment-complete="handlePaymentComplete"
-              @payment-error="handlePaymentError"
-          />
+          <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+            <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Información de pago</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              Total a pagar: <span class="font-medium text-primary-600">{{ formatPrice(totalPrice) }}</span>
+            </p>
+            
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Número de tarjeta <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  v-model="paymentInfo.cardNumber"
+                  placeholder="1234 5678 9012 3456"
+                  class="w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100"
+                >
+              </div>
+              
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Fecha de expiración <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    v-model="paymentInfo.expiryDate"
+                    placeholder="MM/AA"
+                    class="w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100"
+                  >
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Código CVV <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    v-model="paymentInfo.cvv"
+                    placeholder="123"
+                    class="w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100"
+                  >
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Nombre en la tarjeta <span class="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  v-model="paymentInfo.cardholderName"
+                  placeholder="Juan Pérez"
+                  class="w-full py-2 px-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded-xl shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-gray-900 dark:text-gray-100"
+                >
+              </div>
+              
+              <div class="flex items-center mt-2">
+                <input
+                  id="saveCard"
+                  type="checkbox"
+                  v-model="paymentInfo.saveCard"
+                  class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                >
+                <label for="saveCard" class="ml-2 block text-sm text-gray-600 dark:text-gray-400">
+                  Guardar esta tarjeta para futuras reservas
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="lg:col-span-1">
@@ -287,32 +386,28 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import PaymentFormComponent from '@/client/components/payment/payment-form.component.vue';
+import { vehiclesService } from '@/client/services/vehicles.service';
+import { getStoredUser } from '@/auth/services/auth.service';
+import { usersService } from '@/shared/services/usersService';
 
 const router = useRouter();
 const route = useRoute();
 
+// Estado
+const car = ref({});
+const loading = ref(true);
+const error = ref(false);
 const reservationId = ref('RES-' + Math.floor(Math.random() * 10000));
-
 const isProcessing = ref(false);
 const showConfirmation = ref(false);
-const paymentCompleted = ref(false);
 
-const car = ref({
-  id: route.params.id || 1,
-  brand: 'Toyota',
-  model: 'Corolla',
-  year: 2023,
-  category: 'Sedán',
-  price: 45,
-  imageUrl: '/img/toyota-corolla.jpg'
-});
-
+// Datos de la reserva
 const bookingDetails = ref({
   pickupDate: route.query.pickupDate || new Date().toISOString().split('T')[0],
   returnDate: route.query.returnDate || ''
 });
 
+// Información del cliente
 const customerInfo = ref({
   firstName: '',
   lastName: '',
@@ -320,10 +415,19 @@ const customerInfo = ref({
   phone: '',
   address: '',
   city: '',
-  zipCode: '',
-  country: 'ES'
+  zipCode: ''
 });
 
+// Información de pago
+const paymentInfo = ref({
+  cardNumber: '',
+  expiryDate: '',
+  cvv: '',
+  cardholderName: '',
+  saveCard: false
+});
+
+// Extras disponibles
 const extras = ref([
   {
     id: 1,
@@ -357,6 +461,80 @@ const extras = ref([
 
 const selectedExtras = ref([]);
 
+// Cargar los datos del vehículo seleccionado y del usuario
+const loadVehicleData = async () => {
+  loading.value = true;
+  error.value = false;
+  
+  try {
+    const vehicleId = route.params.id;
+    if (!vehicleId) {
+      throw new Error('ID de vehículo no proporcionado');
+    }
+    
+    // Cargar datos del vehículo desde el backend
+    const dateRange = {
+      pickupDate: bookingDetails.value.pickupDate,
+      returnDate: bookingDetails.value.returnDate
+    };
+    
+    const vehicleData = await vehiclesService.getVehicleDetails(vehicleId, dateRange);
+    car.value = vehicleData;
+    
+    console.log('Datos del vehículo cargados para checkout:', vehicleData);
+    
+    // Cargar datos del usuario autenticado
+    await loadUserData();
+    
+  } catch (err) {
+    console.error('Error al cargar datos del vehículo para checkout:', err);
+    error.value = true;
+  } finally {
+    loading.value = false;
+  }
+};
+
+// Cargar información del usuario logueado
+const loadUserData = async () => {
+  try {
+    // Verificar si hay un usuario autenticado
+    const currentUser = getStoredUser();
+    if (!currentUser) {
+      console.log('No hay usuario autenticado, redirigiendo a login');
+      router.push('/login');
+      return;
+    }
+    
+    // Usar el método correcto del servicio para obtener datos del usuario
+    const userProfile = await usersService.getCurrentUser();
+    
+    if (userProfile) {
+      console.log('Datos del usuario obtenidos:', userProfile);
+      
+      // Pre-rellenar el formulario con los datos del usuario
+      customerInfo.value = {
+        firstName: userProfile.firstName || userProfile.name?.split(' ')[0] || '',
+        lastName: userProfile.lastName || (userProfile.name?.split(' ').length > 1 ? userProfile.name.split(' ').slice(1).join(' ') : ''),
+        email: userProfile.email || '',
+        phone: userProfile.phone || '',
+        address: userProfile.address || '',
+        city: userProfile.city || '',
+        zipCode: userProfile.zipCode || ''
+      };
+      
+      // Prellenar el nombre en la tarjeta con el nombre del usuario
+      paymentInfo.value.cardholderName = `${customerInfo.value.firstName} ${customerInfo.value.lastName}`;
+      
+      console.log('Datos cargados en el formulario:', customerInfo.value);
+    } else {
+      console.warn('No se pudieron obtener los datos del perfil');
+    }
+  } catch (err) {
+    console.error('Error al cargar datos del usuario:', err);
+  }
+};
+
+// Cálculo del número total de días
 const totalDays = computed(() => {
   if (!bookingDetails.value.pickupDate || !bookingDetails.value.returnDate) {
     return 1;
@@ -371,15 +549,22 @@ const totalDays = computed(() => {
   return diffDays > 0 ? diffDays : 1;
 });
 
+// Cálculo del precio total
 const totalPrice = computed(() => {
+  if (!car.value || !car.value.price) return 0;
+  
   let price = 0;
 
+  // Precio base del vehículo por los días
   price += car.value.price * totalDays.value;
 
+  // Seguro básico
   price += 15 * totalDays.value;
 
+  // Tasa de servicio
   price += 25;
 
+  // Extras seleccionados
   for (const extraId of selectedExtras.value) {
     const extra = getExtraById(extraId);
     if (extra.priceType === 'per_day') {
@@ -392,52 +577,61 @@ const totalPrice = computed(() => {
   return price;
 });
 
+// Obtener un extra por su ID
 const getExtraById = (id) => {
   return extras.value.find(extra => extra.id === id) || { name: '', price: 0 };
 };
 
+// Validación del formulario
 const isFormValid = computed(() => {
   return (
-      customerInfo.value.firstName &&
-      customerInfo.value.lastName &&
-      customerInfo.value.email &&
-      customerInfo.value.phone &&
-      paymentCompleted.value
+    customerInfo.value.firstName &&
+    customerInfo.value.lastName &&
+    customerInfo.value.email &&
+    customerInfo.value.phone &&
+    customerInfo.value.address &&
+    customerInfo.value.city &&
+    paymentInfo.value.cardNumber &&
+    paymentInfo.value.expiryDate &&
+    paymentInfo.value.cvv &&
+    paymentInfo.value.cardholderName
   );
 });
 
+// Formateo de precio en soles
 const formatPrice = (price) => {
-  return new Intl.NumberFormat('es-ES', {
+  if (!price) return 'S/ 0.00';
+  return new Intl.NumberFormat('es-PE', {
     style: 'currency',
-    currency: 'EUR'
+    currency: 'PEN'
   }).format(price);
 };
 
+// Formateo de fecha
 const formatDate = (dateString) => {
   const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
-  return new Date(dateString).toLocaleDateString('es-ES', options);
+  return new Date(dateString).toLocaleDateString('es-PE', options);
 };
 
-const handlePaymentComplete = () => {
-  paymentCompleted.value = true;
+// Navegar a la página de edición de perfil
+const editProfile = () => {
+  router.push('/client/profile');
 };
 
-const handlePaymentError = (error) => {
-  console.error('Error de pago:', error);
-  paymentCompleted.value = false;
-};
-
+// Procesar la orden
 const placeOrder = () => {
   if (!isFormValid.value) return;
 
   isProcessing.value = true;
 
+  // Simulación de procesamiento de pago (reemplazar con llamada a API real)
   setTimeout(() => {
     isProcessing.value = false;
     showConfirmation.value = true;
   }, 1500);
 };
 
+// Navegación
 const goToReservations = () => {
   router.push('/client/reservations');
 };
@@ -446,17 +640,8 @@ const goToHome = () => {
   router.push('/client/home');
 };
 
+// Cargar datos al montar el componente
 onMounted(() => {
-  setTimeout(() => {
-    car.value = {
-      id: route.params.id,
-      brand: 'Toyota',
-      model: 'Corolla',
-      year: 2023,
-      category: 'Sedán',
-      price: 45,
-      imageUrl: '/img/toyota-corolla.jpg'
-    };
-  }, 500);
+  loadVehicleData();
 });
 </script>

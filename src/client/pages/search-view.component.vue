@@ -33,7 +33,11 @@
         <div v-if="cars.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div v-for="car in cars" :key="car.id" class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-transform hover:scale-[1.02]">
             <div class="relative bg-gray-100 dark:bg-gray-700">
-              <div class="w-full h-48 flex items-center justify-center">
+              <!-- Mostrar imagen real si existe, de lo contrario mostrar ícono -->
+              <div v-if="car.images && car.images.length > 0" class="w-full h-48">
+                <img :src="car.images[0]" :alt="`${car.brand} ${car.model}`" class="w-full h-full object-cover" />
+              </div>
+              <div v-else class="w-full h-48 flex items-center justify-center">
                 <i :class="getCarIcon(car)" class="text-6xl"></i>
               </div>
               <div class="absolute top-3 right-3 bg-white dark:bg-gray-800 rounded-xl shadow-md py-1 px-2 flex items-center">
@@ -102,6 +106,7 @@
 import { ref, reactive, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import SearchFiltersComponent from '@/client/components/vehicles/search-filters.component.vue';
+import { vehiclesService } from '@/client/services/vehicles.service';
 
 const route = useRoute();
 
@@ -152,85 +157,48 @@ const getCarIcon = (car) => {
 const loadCars = async () => {
   loading.value = true;
 
-  setTimeout(() => {
-    cars.value = [
-      {
-        id: 1,
-        brand: 'Toyota',
-        model: 'Corolla',
-        year: 2023,
-        category: 'sedan',
-        price: 45,
-        seats: 5,
-        luggage: 3,
-        transmission: 'automatic',
-        rating: 4.8
-      },
-      {
-        id: 2,
-        brand: 'Volkswagen',
-        model: 'Golf',
-        year: 2022,
-        category: 'hatchback',
-        price: 40,
-        seats: 5,
-        luggage: 2,
-        transmission: 'manual',
-        rating: 4.6
-      },
-      {
-        id: 3,
-        brand: 'BMW',
-        model: 'X3',
-        year: 2022,
-        category: 'suv',
-        price: 75,
-        seats: 5,
-        luggage: 4,
-        transmission: 'automatic',
-        rating: 4.9
-      },
-      {
-        id: 4,
-        brand: 'Mercedes-Benz',
-        model: 'Clase C',
-        year: 2023,
-        category: 'sedan',
-        price: 80,
-        seats: 5,
-        luggage: 3,
-        transmission: 'automatic',
-        rating: 4.7
-      },
-      {
-        id: 5,
-        brand: 'Audi',
-        model: 'A4',
-        year: 2022,
-        category: 'sedan',
-        price: 70,
-        seats: 5,
-        luggage: 3,
-        transmission: 'automatic',
-        rating: 4.5
-      },
-      {
-        id: 6,
-        brand: 'Tesla',
-        model: 'Model 3',
-        year: 2023,
-        category: 'electric',
-        price: 85,
-        seats: 5,
-        luggage: 2,
-        transmission: 'automatic',
-        rating: 4.9
+  try {
+    // Crear un objeto con solo los parámetros que tienen valores
+    const searchParams = {};
+    
+    // Añadir todos los filtros que tienen un valor (no vacío)
+    Object.keys(filters).forEach(key => {
+      if (filters[key] !== '' && filters[key] !== null && filters[key] !== undefined) {
+        searchParams[key] = filters[key];
       }
-    ];
-
-    applyFilters();
+    });
+    
+    console.log("Parámetros de búsqueda para enviar:", searchParams);
+    
+    // Obtener datos del servicio con los parámetros válidos
+    const response = await vehiclesService.searchVehicles(searchParams);
+    
+    // Extraer el array de la respuesta .NET
+    let vehiclesArray = [];
+    
+    if (response && response.$values) {
+      // Si tenemos la estructura esperada de .NET
+      vehiclesArray = response.$values;
+    } else if (Array.isArray(response)) {
+      // Si ya es un array
+      vehiclesArray = response;
+    } else if (response && Array.isArray(response.data)) {
+      // Si está dentro de un campo data
+      vehiclesArray = response.data;
+    }
+    
+    // Asegurar que cars.value siempre sea un array
+    cars.value = vehiclesArray;
+    console.log("Vehículos cargados:", cars.value.length);
+    
+    // Aplicar los filtros adicionales que no se procesaron en el backend
+    applyFilters(false);
+  } catch (error) {
+    console.error('Error al cargar vehículos:', error);
+    cars.value = [];
+  } finally {
     loading.value = false;
-  }, 1000);
+  }
 };
 
 const handleFilterChange = (newFilters) => {
@@ -238,59 +206,18 @@ const handleFilterChange = (newFilters) => {
     filters[key] = newFilters[key];
   });
 
-  applyFilters();
+  applyFilters(true);
 };
 
-const applyFilters = () => {
-  loading.value = true;
-
-  setTimeout(() => {
-    let filteredCars = [...cars.value];
-
-    if (filters.brand) {
-      filteredCars = filteredCars.filter(car => car.brand.toLowerCase() === filters.brand.toLowerCase());
-    }
-
-    if (filters.category) {
-      filteredCars = filteredCars.filter(car => car.category === filters.category);
-    }
-
-    if (filters.maxPrice) {
-      filteredCars = filteredCars.filter(car => car.price <= parseInt(filters.maxPrice));
-    }
-
-    if (filters.transmission) {
-      filteredCars = filteredCars.filter(car => car.transmission === filters.transmission);
-    }
-
-    if (filters.minSeats) {
-      filteredCars = filteredCars.filter(car => car.seats >= parseInt(filters.minSeats));
-    }
-
-    if (filters.minLuggage) {
-      filteredCars = filteredCars.filter(car => car.luggage >= parseInt(filters.minLuggage));
-    }
-
-    if (filters.minYear) {
-      filteredCars = filteredCars.filter(car => car.year >= parseInt(filters.minYear));
-    }
-
-    if (filters.minRating) {
-      filteredCars = filteredCars.filter(car => car.rating >= parseFloat(filters.minRating));
-    }
-
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      filteredCars = filteredCars.filter(car =>
-          car.brand.toLowerCase().includes(searchLower) ||
-          car.model.toLowerCase().includes(searchLower)
-      );
-    }
-
-    cars.value = filteredCars;
-    sortCars();
-    loading.value = false;
-  }, 500);
+const applyFilters = (reloadFromServer = true) => {
+  if (reloadFromServer) {
+    // Si cambiaron filtros principales, recargamos del servidor
+    loadCars();
+    return;
+  }
+  
+  // Aplicar filtros adicionales localmente si es necesario
+  sortCars();
 };
 
 const sortCars = () => {
@@ -314,15 +241,6 @@ const resetFilters = () => {
   Object.keys(filters).forEach(key => {
     filters[key] = '';
   });
-
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  filters.pickupDate = tomorrow.toISOString().split('T')[0];
-
-  const returnDate = new Date();
-  returnDate.setDate(returnDate.getDate() + 4);
-  filters.returnDate = returnDate.toISOString().split('T')[0];
-
   loadCars();
 };
 
@@ -337,5 +255,4 @@ onMounted(() => {
   loadCars();
 });
 </script>
-
 

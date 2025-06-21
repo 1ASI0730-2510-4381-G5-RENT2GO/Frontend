@@ -48,6 +48,9 @@ export const useAuthStore = defineStore('auth', {
       this.loading = true; this.error = null;
       try {
         const resp = await login(credentials);
+        // Refrescar datos completos (incluyendo ProfileImage) tras login
+        const freshUser = await getCurrentUser();
+        if (freshUser) this.user = freshUser;
         this.user = resp.user || resp.data;
         this.isAuthenticated = true;
         return resp;

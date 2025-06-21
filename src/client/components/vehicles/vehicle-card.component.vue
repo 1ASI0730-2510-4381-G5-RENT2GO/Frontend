@@ -1,11 +1,16 @@
 <template>
   <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
     <div class="relative">
-      <img
-          :src="car.imageUrl || '/img/car-placeholder.jpg'"
+      <div v-if="car.images && car.images.length > 0" class="w-full h-48">
+        <img
+          :src="car.images[0]"
           :alt="car.model"
           class="w-full h-48 object-cover"
-      >
+        />
+      </div>
+      <div v-else class="w-full h-48 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+        <i :class="['text-6xl', getCarIcon(car)]"></i>
+      </div>
       <div
           v-if="car.status"
           class="absolute top-3 right-3"
@@ -111,13 +116,19 @@ const statusLabels = {
 };
 
 const formatPrice = (price) => {
-  return new Intl.NumberFormat('es-ES', {
+  if (!price) return 'S/ 0.00';
+  return new Intl.NumberFormat('es-PE', {
     style: 'currency',
-    currency: 'EUR'
+    currency: 'PEN'
   }).format(price);
 };
 
 const toggleFavorite = () => {
   emit('favorite-toggle', props.car.id);
 };
+
+const getCarIcon = (car) => {
+  return 'pi pi-car'; // Replace with logic to determine the icon based on car properties if needed
+};
 </script>
+

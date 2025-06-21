@@ -2,10 +2,6 @@ import { createApiService } from '../../shared/services/api.service';
 
 // Crear instancia de axios configurada para el endpoint de provider
 const providerAPI = createApiService('provider');
-
-/**
- * Servicios para gestión de vehículos del proveedor
- */
 export default {
     /**
      * Obtiene todos los vehículos del proveedor
@@ -14,7 +10,33 @@ export default {
     async getVehicles() {
         try {
             const response = await providerAPI.get('/vehicles');
-            return response.data;
+            // Construir array bruto de vehículos según estructura
+            let rawVehicles = [];
+            if (Array.isArray(response.data)) {
+                rawVehicles = response.data;
+            } else if (response.data && typeof response.data === 'object') {
+                if (Array.isArray(response.data.value)) {
+                    rawVehicles = response.data.value;
+                } else {
+                    const possibleArrayProps = Object.keys(response.data).filter(key => Array.isArray(response.data[key]));
+                    if (possibleArrayProps.length > 0) rawVehicles = response.data[possibleArrayProps[0]];
+                    else rawVehicles = Array.isArray(Object.values(response.data)) ? Object.values(response.data) : [response.data];
+                }
+            }
+            const normalizedVehicles = rawVehicles.map(vehicle => this.normalizeImageProperty(vehicle));
+            // Obtener imágenes por separado desde el nuevo endpoint
+            const vehiclesWithImages = await Promise.all(
+                normalizedVehicles.map(async vehicle => {
+                    try {
+                        const imgRes = await providerAPI.get(`/vehicles/${vehicle.id}/images`);
+                        if (Array.isArray(imgRes.data)) vehicle.images = imgRes.data;
+                    } catch (e) {
+                        console.error(`Error al obtener imágenes del vehículo ${vehicle.id}:`, e);
+                    }
+                    return vehicle;
+                })
+            );
+            return vehiclesWithImages;
         } catch (error) {
             console.error('Error al obtener vehículos:', error);
             throw error;
@@ -29,7 +51,7 @@ export default {
     async getVehicleById(id) {
         try {
             const response = await providerAPI.get(`/vehicles/${id}`);
-            return response.data;
+            return this.normalizeImageProperty(response.data);
         } catch (error) {
             console.error(`Error al obtener vehículo ${id}:`, error);
             throw error;
@@ -43,10 +65,37 @@ export default {
      */
     async registerVehicle(vehicleData) {
         try {
-            const response = await providerAPI.post('/vehicles', vehicleData);
+            // Agregar logs de depuración
+            console.log('Datos enviados al backend:', JSON.stringify(vehicleData, null, 2));
+            
+            // Configurar contenido específico para solucionar problema de compatibilidad
+            // con el formato esperado por el backend
+            const vehicle = {
+                ...vehicleData,
+                // Asegurar que estos campos existan explícitamente
+                doors: vehicleData.doors || 0,
+                seats: vehicleData.seats || 0,
+                transmission: vehicleData.transmission || '',
+                fuelType: vehicleData.fuelType || '',
+                airConditioner: vehicleData.airConditioner || false,
+            };
+            
+            console.log('Datos procesados para enviar:', JSON.stringify(vehicle, null, 2));
+            
+            const response = await providerAPI.post('/vehicles', vehicle);
             return response.data;
         } catch (error) {
             console.error('Error al registrar vehículo:', error);
+            
+            // Agregar más detalles del error para depuración
+            if (error.response) {
+                console.error('Detalles de respuesta de error:', {
+                    status: error.response.status,
+                    statusText: error.response.statusText,
+                    data: error.response.data
+                });
+            }
+            
             throw error;
         }
     },
@@ -97,6 +146,108 @@ export default {
             console.error(`Error al actualizar disponibilidad del vehículo ${id}:`, error);
             throw error;
         }
-    }
-};
+    },
 
+    /**
+     * Actualiza el estado de un vehículo
+     * @param {string} id - ID del vehículo
+     * @param {string} status - Nuevo estado ('available', 'rented', 'maintenance', 'inactive')
+     * @returns {Promise<Object>}
+     */
+    async updateVehicleStatus(id, status) {
+        try {
+            console.log(`Actualizando estado del vehículo ${id} a ${status}`);
+            const response = await providerAPI.patch(`/vehicles/${id}/status`, {
+                status: status
+            });
+            return response.data;
+        } catch (error) {
+            console.error(`Error al actualizar estado del vehículo ${id}:`, error);
+            
+            // Agregar más detalles del error para depuración
+            if (error.response) {
+                console.error('Detalles de respuesta de error:', {
+                    status: error.response.status,
+                    statusText: error.response.statusText,
+                    data: error.response.data
+                });
+            }
+            
+            throw error;
+        }
+    },
+
+    /**
+     * Desactiva un vehículo (cambia su estado a 'inactive')
+     * @param {string} id - ID del vehículo
+     * @returns {Promise<Object>}
+     */
+    async deactivateVehicle(id) {
+        return this.updateVehicleStatus(id, 'inactive');
+    },
+
+    /**
+     * Activa un vehículo (cambia su estado a 'available')
+     * @param {string} id - ID del vehículo
+     * @returns {Promise<Object>}
+     */
+    async activateVehicle(id) {
+        return this.updateVehicleStatus(id, 'available');
+    },
+
+    /**
+     * Marca un vehículo en mantenimiento
+     * @param {string} id - ID del vehículo
+     * @returns {Promise<Object>}
+     */
+    async setVehicleMaintenance(id) {
+        return this.updateVehicleStatus(id, 'maintenance');
+    },
+
+    /**
+     * Sube imágenes para un vehículo
+     * @param {string} id - ID del vehículo
+     * @param {File[]} files - Archivos de imagen a subir
+     * @returns {Promise<Object>}
+     */
+    async uploadVehicleImages(id, files) {
+        try {
+            // Crear un FormData para enviar los archivos
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+            
+            const response = await providerAPI.post(`/vehicles/${id}/images`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            
+            return response.data;
+        } catch (error) {
+            console.error(`Error al subir imágenes para el vehículo ${id}:`, error);
+            
+            // Agregar más detalles del error para depuración
+            if (error.response) {
+                console.error('Detalles de respuesta de error:', {
+                    status: error.response.status,
+                    statusText: error.response.statusText,
+                    data: error.response.data
+                });
+            }
+            
+            throw error;
+        }
+    },
+
+    // Función para normalizar la propiedad de imágenes
+    normalizeImageProperty(vehicle) {
+        if (!vehicle) return vehicle;
+        const normalized = { ...vehicle };
+        // Usar images (camelCase) o Images (pascal) o array vacío
+        const imgs = vehicle.images ?? vehicle.Images ?? [];
+        normalized.images = Array.isArray(imgs) ? imgs : [imgs];
+        return normalized;
+    },
+};

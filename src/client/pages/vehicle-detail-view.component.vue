@@ -1,10 +1,30 @@
 <template>
   <div class="container mx-auto px-4 py-8">
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+    <div v-if="loading" class="flex justify-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+    </div>
+
+    <div v-else-if="error" class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 text-center">
+      <div class="text-6xl text-red-500 flex justify-center mb-4">
+        <i class="pi pi-exclamation-triangle"></i>
+      </div>
+      <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">Error al cargar el vehículo</h3>
+      <p class="text-gray-600 dark:text-gray-400 mb-6">
+        No se pudo cargar la información del vehículo solicitado.
+      </p>
+      <router-link
+        to="/client/search"
+        class="bg-primary-600 hover:bg-primary-700 text-white py-2 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors text-sm font-medium"
+      >
+        Volver a búsqueda
+      </router-link>
+    </div>
+
+    <div v-else class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
       <div class="relative">
         <img
-            :src="selectedImage || car.imageUrl || '/img/car-placeholder.jpg'"
-            :alt="car.model"
+            :src="selectedImage || (car.images && car.images.length > 0 ? car.images[0] : '/img/car-placeholder.jpg')"
+            :alt="`${car.brand} ${car.model}`"
             class="w-full h-64 md:h-96 object-cover"
         >
 
@@ -28,7 +48,7 @@
           ]"></i>
         </button>
 
-        <div class="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
+        <div v-if="car.images && car.images.length > 1" class="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
           <button
               v-for="(image, index) in car.images"
               :key="index"
@@ -190,7 +210,7 @@
               </div>
             </div>
 
-            <div>
+            <div v-if="car.features && car.features.length > 0">
               <h3 class="font-medium text-gray-800 dark:text-gray-200 mb-2">Características adicionales</h3>
               <ul class="grid grid-cols-2 gap-x-4 gap-y-2">
                 <li v-for="feature in car.features" :key="feature" class="flex items-center text-sm text-gray-600 dark:text-gray-400">
@@ -200,7 +220,7 @@
               </ul>
             </div>
 
-            <div>
+            <div v-if="car.description">
               <h3 class="font-medium text-gray-800 dark:text-gray-200 mb-2">Descripción</h3>
               <p class="text-gray-600 dark:text-gray-400 text-sm">{{ car.description }}</p>
             </div>
@@ -270,11 +290,6 @@
                   <p class="text-sm text-gray-500 dark:text-gray-400">{{ car.reviewCount }} valoraciones</p>
                 </div>
               </div>
-              <button
-                  class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-xl text-sm font-medium transition-colors"
-              >
-                Filtrar valoraciones
-              </button>
             </div>
 
             <div v-if="reviews.length > 0" class="space-y-4">
@@ -303,15 +318,6 @@
                   </div>
                 </div>
                 <p class="mt-3 text-sm text-gray-600 dark:text-gray-400">{{ review.comment }}</p>
-
-                <div v-if="review.images && review.images.length" class="mt-3 flex space-x-2">
-                  <img
-                      v-for="(image, index) in review.images"
-                      :key="index"
-                      :src="image"
-                      class="w-16 h-16 rounded-xl object-cover cursor-pointer"
-                  >
-                </div>
               </div>
             </div>
             <div v-else class="py-8 text-center">
@@ -326,70 +332,19 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+import { vehiclesService } from '@/client/services/vehicles.service';
 
 const router = useRouter();
+const route = useRoute();
+const vehicleId = route.params.id;
 
-const car = ref({
-  id: 1,
-  brand: 'Toyota',
-  model: 'Corolla',
-  year: 2025,
-  category: 'Sedán',
-  price: 45,
-  imageUrl: '/img/toyota-corolla.jpg',
-  images: [
-    '/img/toyota-corolla.jpg',
-    '/img/toyota-corolla-interior.jpg',
-    '/img/toyota-corolla-back.jpg'
-  ],
-  status: 'available',
-  rating: 4.7,
-  reviewCount: 127,
-  seats: 5,
-  luggage: 3,
-  transmission: 'automatic',
-  fuelType: 'Híbrido',
-  isFavorite: false,
-  features: [
-    'Aire acondicionado',
-    'Bluetooth',
-    'Cámara trasera',
-    'Control de crucero',
-    'Navegación GPS',
-    'Asientos eléctricos',
-    'Sensor de aparcamiento',
-    'USB'
-  ],
-  description: 'El Toyota Corolla es un sedán compacto espacioso y eficiente, ideal para viajes en ciudad y carretera. Con su sistema híbrido, ofrece bajo consumo de combustible sin sacrificar rendimiento. Interior cómodo con tecnología moderna para una experiencia de conducción superior.'
-});
-
-const reviews = ref([
-  {
-    id: 1,
-    user: {
-      name: 'Carlos Martínez',
-      avatar: '/img/user-avatar-1.jpg'
-    },
-    rating: 5,
-    date: '2025-08-15',
-    comment: 'Excelente vehículo, muy económico en consumo y cómodo para viajes largos. La recogida y entrega fueron rápidas y sin problemas. Lo recomiendo totalmente.',
-    images: ['/img/user-review-1.jpg', '/img/user-review-2.jpg']
-  },
-  {
-    id: 2,
-    user: {
-      name: 'Laura Sánchez',
-      avatar: '/img/user-avatar-2.jpg'
-    },
-    rating: 4,
-    date: '2025-07-22',
-    comment: 'Muy buen coche, limpio y en perfectas condiciones. El único problema fue un pequeño retraso en la entrega, pero por lo demás todo perfecto.',
-    images: []
-  }
-]);
-
-const selectedImage = ref(car.value.imageUrl);
+// Estado
+const car = ref({});
+const loading = ref(true);
+const error = ref(false);
+const reviews = ref([]);
+const selectedImage = ref('');
 const activeTab = ref('features');
 const bookingDetails = ref({
   pickupDate: new Date().toISOString().split('T')[0],
@@ -401,6 +356,50 @@ const tabs = [
   { id: 'conditions', label: 'Condiciones' },
   { id: 'reviews', label: 'Opiniones' }
 ];
+
+// Cargar datos del vehículo
+const loadVehicleData = async () => {
+  loading.value = true;
+  error.value = false;
+  
+  try {
+    // Obtener datos del vehículo desde el backend
+    const dateRange = {
+      pickupDate: route.query.pickupDate || '',
+      returnDate: route.query.returnDate || ''
+    };
+    
+    const vehicleData = await vehiclesService.getVehicleDetails(vehicleId, dateRange);
+    console.log('Datos del vehículo cargados:', vehicleData);
+    
+    // Asignar datos al estado
+    car.value = vehicleData;
+    
+    // Si hay imágenes, seleccionar la primera como imagen principal
+    if (vehicleData.images && vehicleData.images.length > 0) {
+      selectedImage.value = vehicleData.images[0];
+    }
+    
+    // Inicializar fechas de reserva si vienen en la URL
+    if (route.query.pickupDate) {
+      bookingDetails.value.pickupDate = route.query.pickupDate;
+    }
+    if (route.query.returnDate) {
+      bookingDetails.value.returnDate = route.query.returnDate;
+    } else {
+      // Si no hay fecha de devolución, establecer una por defecto (3 días después)
+      const returnDate = new Date();
+      returnDate.setDate(returnDate.getDate() + 3);
+      bookingDetails.value.returnDate = returnDate.toISOString().split('T')[0];
+    }
+    
+  } catch (err) {
+    console.error('Error al cargar datos del vehículo:', err);
+    error.value = true;
+  } finally {
+    loading.value = false;
+  }
+};
 
 const minDate = computed(() => {
   return new Date().toISOString().split('T')[0];
@@ -421,7 +420,7 @@ const totalDays = computed(() => {
 });
 
 const totalPrice = computed(() => {
-  if (totalDays.value === 0) return 0;
+  if (totalDays.value === 0 || !car.value || !car.value.price) return 0;
 
   return (car.value.price * totalDays.value) + (15 * totalDays.value) + 25;
 });
@@ -443,6 +442,7 @@ const statusLabels = {
 };
 
 const formatPrice = (price) => {
+  if (!price) return '0.00';
   return new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'PEN'
@@ -456,6 +456,7 @@ const formatDate = (dateString) => {
 
 const toggleFavorite = () => {
   car.value.isFavorite = !car.value.isFavorite;
+  // Aquí se implementaría la lógica para guardar el estado de favorito en el backend
 };
 
 const proceedToCheckout = () => {
@@ -471,9 +472,6 @@ const proceedToCheckout = () => {
 };
 
 onMounted(() => {
-  const returnDate = new Date();
-  returnDate.setDate(returnDate.getDate() + 3);
-  bookingDetails.value.returnDate = returnDate.toISOString().split('T')[0];
+  loadVehicleData();
 });
 </script>
-

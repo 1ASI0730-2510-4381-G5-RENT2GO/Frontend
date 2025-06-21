@@ -1,21 +1,22 @@
-  import axios from 'axios';
+import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5239/api';
 
 /**
- * Crea una instancia de axios configurada para conectarse a un endpoint específico
- * @param {string} endpoint - El endpoint base para este servicio (ej: 'admin', 'client')
- * @returns {AxiosInstance} - Una instancia de axios configurada
+ * Crea una instancia de axios configurada con base URL y tokens
+ * @param {string} domain - Dominio o segmento de URL (ej: 'auth', 'client', 'provider')
+ * @returns {AxiosInstance}
  */
-export const createApiService = (endpoint) => {
+export function createApiService(domain) {
     const api = axios.create({
-        baseURL: `${API_BASE_URL}/${endpoint}`,
+        baseURL: `${API_BASE_URL}/${domain}`,
         timeout: 10000,
         headers: {
             'Content-Type': 'application/json',
         }
     });
 
+    // Interceptor para añadir token de autenticación
     api.interceptors.request.use(
         (config) => {
             const token = localStorage.getItem('authToken');
@@ -27,11 +28,13 @@ export const createApiService = (endpoint) => {
         (error) => Promise.reject(error)
     );
 
+    // Interceptor para manejo de errores
     api.interceptors.response.use(
         response => response,
         error => {
             const status = error.response?.status;
-
+            
+            // Redirigir a login si hay error 401 (no autorizado)
             if (status === 401 && window.location.pathname !== '/login') {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('user');
@@ -43,4 +46,8 @@ export const createApiService = (endpoint) => {
     );
 
     return api;
+}
+
+export default {
+    createApiService
 };
