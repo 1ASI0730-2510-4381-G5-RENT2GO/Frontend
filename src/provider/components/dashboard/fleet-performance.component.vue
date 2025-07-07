@@ -71,6 +71,10 @@ defineProps({
 })
 
 function formatCurrency(amount) {
-  return amount.toFixed(2) + ' €'
+  return new Intl.NumberFormat('es-PE', {
+    style: 'currency',
+    currency: 'PEN'
+  }).format(amount);
 }
 </script>
+

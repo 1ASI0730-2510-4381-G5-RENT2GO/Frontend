@@ -54,7 +54,9 @@ const routes = [
             { path: 'search', name: 'SearchCars', component: SearchViewComponent, meta: { title: 'navigation.search' }},
             { path: 'reservations', name: 'MyReservations', component: ClientReservationsViewComponent, meta: { title: 'navigation.my_reservations' }},
             { path: 'payment-methods', name: 'PaymentMethods', component: PaymentMethodsViewComponent, meta: { title: 'navigation.payment_methods' }},
-            { path: 'car/:id', name: 'car-detail', component: ClientVehicleDetailViewComponent, meta: { title: 'navigation.vehicle_detail' }},
+            { path: 'vehicle/:id', name: 'vehicle-detail', component: ClientVehicleDetailViewComponent, meta: { title: 'navigation.vehicle_detail' }},
+            // Mantener la ruta anterior para compatibilidad con links existentes
+            { path: 'car/:id', redirect: to => ({ path: `/client/vehicle/${to.params.id}`, query: to.query }) },
             { path: 'checkout/:id', name: 'checkout', component: CheckoutViewComponent, meta: { title: 'navigation.checkout' }},
             { path: 'my-reservations/:id', name: 'ClientReservationDetail', component: ClientReservationDetailViewComponent, meta: { title: 'navigation.reservation_detail' }},
             { path: 'my-reservations/:id/edit', name: 'ClientReservationEdit', component: ReservationEditViewComponent, meta: { title: 'navigation.edit_reservation' }},

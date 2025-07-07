@@ -31,15 +31,24 @@
             class="hover:bg-primary-50/50 dark:hover:bg-primary-900/10 transition-colors"
         >
           <td class="px-4 py-3 text-gray-700 dark:text-gray-200">
-            {{ formatDate(payment.date) }}
+            {{ formatDate(payment.createdAt || payment.paymentDate || payment.date) }}
           </td>
           <td class="px-4 py-3 text-gray-700 dark:text-gray-200">
-            {{ payment.description }}
+            <div>
+              <div class="font-medium">
+                {{ getPaymentDescription(payment) }}
+              </div>
+              <div v-if="payment.transactionId" class="text-xs text-gray-500 dark:text-gray-400">
+                ID: {{ payment.transactionId }}
+              </div>
+            </div>
           </td>
           <td class="px-4 py-3 text-gray-700 dark:text-gray-200">
             <div class="flex items-center">
-              <i :class="getCardIcon(payment.method)" class="mr-2 text-lg"></i>
-              <span class="font-medium">•••• {{ payment.last4 }}</span>
+              <i :class="getCardIcon(payment.paymentMethodType || payment.method)" class="mr-2 text-lg"></i>
+              <span class="font-medium">
+                •••• {{ payment.cardNumberLast4 || payment.last4 || '****' }}
+              </span>
             </div>
           </td>
           <td class="px-4 py-3 text-right font-medium text-gray-700 dark:text-gray-200">
@@ -89,15 +98,37 @@ defineProps({
 });
 
 const formatDate = (dateString) => {
+  if (!dateString) return 'Fecha no disponible';
   const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
   return new Date(dateString).toLocaleDateString('es-ES', options);
 };
 
 const formatPrice = (price) => {
-  return new Intl.NumberFormat('es-ES', {
+  if (!price) return 'S/ 0.00';
+  return new Intl.NumberFormat('es-PE', {
     style: 'currency',
-    currency: 'EUR'
+    currency: 'PEN'
   }).format(price);
+};
+
+const getPaymentDescription = (payment) => {
+  // Usar la información de la reserva si está disponible
+  if (payment.vehicleBrand && payment.vehicleModel) {
+    return `Alquiler ${payment.vehicleBrand} ${payment.vehicleModel}`;
+  }
+  
+  // Usar la descripción si está disponible
+  if (payment.description) {
+    return payment.description;
+  }
+  
+  // Usar las notas del pago
+  if (payment.notes && !payment.notes.includes('Pago procesado')) {
+    return payment.notes;
+  }
+  
+  // Descripción por defecto
+  return 'Pago de reserva de vehículo';
 };
 
 const getCardIcon = (method) => {
@@ -106,7 +137,10 @@ const getCardIcon = (method) => {
     'mastercard': 'pi pi-credit-card text-red-600 dark:text-red-400',
     'amex': 'pi pi-credit-card text-indigo-600 dark:text-indigo-400',
     'paypal': 'pi pi-paypal text-blue-600 dark:text-blue-400',
-    'bank': 'pi pi-wallet text-green-600 dark:text-green-400'
+    'bank': 'pi pi-wallet text-green-600 dark:text-green-400',
+    'bank_account': 'pi pi-wallet text-green-600 dark:text-green-400',
+    'credit_card': 'pi pi-credit-card text-blue-600 dark:text-blue-400',
+    'cash': 'pi pi-money-bill text-green-600 dark:text-green-400'
   };
 
   return icons[method] || 'pi pi-credit-card text-gray-600 dark:text-gray-400';
@@ -117,14 +151,23 @@ const getStatusClass = (status) => {
     'completed': 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
     'pending': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300',
     'failed': 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
-    'refunded': 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
+    'refunded': 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',
+    'succeeded': 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
   };
 
   return classes[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
 };
 
 const getStatusText = (status) => {
-  return t(`client.payment.history.status_labels.${status}`) || t('client.payment.history.status_labels.unknown');
+  const statusLabels = {
+    'completed': 'Completado',
+    'pending': 'Pendiente', 
+    'failed': 'Fallido',
+    'refunded': 'Reembolsado',
+    'succeeded': 'Completado'
+  };
+  
+  return statusLabels[status] || t('client.payment.history.status_labels.unknown');
 };
 
 const getStatusIcon = (status) => {
@@ -132,7 +175,8 @@ const getStatusIcon = (status) => {
     'completed': 'pi pi-check-circle',
     'pending': 'pi pi-clock',
     'failed': 'pi pi-times-circle',
-    'refunded': 'pi pi-replay'
+    'refunded': 'pi pi-replay',
+    'succeeded': 'pi pi-check-circle'
   };
 
   return icons[status] || 'pi pi-question-circle';
@@ -162,4 +206,3 @@ const getStatusIcon = (status) => {
   }
 }
 </style>
-

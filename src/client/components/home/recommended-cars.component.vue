@@ -11,7 +11,16 @@
       <div v-for="car in cars" :key="car.id" class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden transition-all hover:shadow-md group">
         <div class="relative bg-gray-100 dark:bg-gray-700 p-4">
           <div class="w-full h-32 flex items-center justify-center">
-            <i :class="getCarIcon(car)" class="text-5xl group-hover:scale-110 transition-transform"></i>
+            <!-- Mostrar imagen real del vehículo si está disponible -->
+            <img 
+              v-if="getVehicleImage(car)"
+              :src="getVehicleImage(car)"
+              :alt="`${car.brand} ${car.model}`"
+              class="w-full h-full object-cover rounded-lg group-hover:scale-105 transition-transform"
+              @error="handleImageError($event, car)"
+            />
+            <!-- Fallback a icono si no hay imagen -->
+            <i v-else :class="getCarIcon(car)" class="text-5xl group-hover:scale-110 transition-transform"></i>
           </div>
           <div v-if="car.discount" class="absolute top-2 right-2 bg-red-600 text-white px-2 py-0.5 rounded text-xs font-bold">
             -{{ car.discount }}%
@@ -46,7 +55,7 @@
           </div>
 
           <router-link
-              :to="{ name: 'car-detail', params: { id: car.id } }"
+              :to="{ name: 'vehicle-detail', params: { id: car.id } }"
               class="block w-full text-center bg-primary-600 hover:bg-primary-700 text-white py-1.5 rounded-md text-sm font-medium transition-colors"
           >
             {{ $t('client.home.view_details') }}
@@ -58,7 +67,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits, ref } from 'vue';
 
 const props = defineProps({
   cars: {
@@ -69,22 +78,48 @@ const props = defineProps({
 
 const emit = defineEmits(['toggle-favorite']);
 
+const imageErrors = ref(new Set());
+
+const getVehicleImage = (car) => {
+  // Si hay un error de imagen para este auto, no mostrar imagen
+  if (imageErrors.value.has(car.id)) return null;
+  
+  // Si hay imágenes disponibles, usar la primera
+  if (car.images && Array.isArray(car.images) && car.images.length > 0) {
+    return car.images[0];
+  }
+  
+  return null;
+};
+
+const handleImageError = (event, car) => {
+  imageErrors.value.add(car.id);
+  event.target.style.display = 'none';
+};
+
 const getCarIcon = (car) => {
   const brandColors = {
     'Tesla': 'text-green-500',
     'BMW': 'text-blue-500',
     'Mercedes-Benz': 'text-gray-500',
-    'Audi': 'text-red-500'
+    'Mercedes': 'text-gray-500',
+    'Audi': 'text-red-500',
+    'Toyota': 'text-red-600',
+    'Honda': 'text-blue-600',
+    'Volkswagen': 'text-blue-700',
+    'Ford': 'text-blue-800'
   };
 
   const categoryIcons = {
     'sedan': 'pi pi-car',
     'hatchback': 'pi pi-car',
     'suv': 'pi pi-truck',
-    'electric': 'pi pi-bolt'
+    'electric': 'pi pi-bolt',
+    'pickup': 'pi pi-truck',
+    'coupe': 'pi pi-car'
   };
 
-  const category = car.category || (car.brand === 'Tesla' ? 'electric' : 'sedan');
+  const category = car.category?.toLowerCase() || (car.brand === 'Tesla' ? 'electric' : 'sedan');
   const icon = categoryIcons[category] || 'pi pi-car';
   const color = brandColors[car.brand] || 'text-gray-500';
 
@@ -92,9 +127,11 @@ const getCarIcon = (car) => {
 };
 
 const formatPrice = (price) => {
-  return new Intl.NumberFormat('es-ES', {
+  if (!price || price === 0) return 'Consultar precio';
+  
+  return new Intl.NumberFormat('es-PE', {
     style: 'currency',
-    currency: 'EUR'
+    currency: 'PEN'
   }).format(price);
 };
 

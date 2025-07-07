@@ -26,14 +26,14 @@
           >
             <div class="flex items-center">
               <div class="w-12 h-8 mr-4 flex items-center justify-center">
-                <i :class="getCardIcon(method.type)" class="text-2xl"></i>
+                <i :class="getCardIcon(method.cardType || method.type)" class="text-2xl"></i>
               </div>
               <div>
                 <p class="font-medium text-gray-800 dark:text-gray-200">
-                  •••• •••• •••• {{ method.last4 }}
+                  •••• •••• •••• {{ method.cardNumberLast4 }}
                 </p>
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  Caduca: {{ method.expMonth }}/{{ method.expYear }}
+                  Caduca: {{ method.cardExpiry }}
                   <span v-if="method.isDefault" class="ml-2 text-xs bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded-full font-medium">
                     Predeterminada
                   </span>
@@ -90,7 +90,7 @@
       />
     </div>
 
-    <div v-if="showAddCardModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div v-if="showAddCardModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 rounded-xl">
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 max-w-md w-full">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-xl font-bold text-gray-800 dark:text-gray-200">
@@ -173,7 +173,7 @@
                 id="set-default"
                 v-model="cardForm.setDefault"
                 type="checkbox"
-                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded-xl"
             >
             <label for="set-default" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
               Establecer como método de pago predeterminado
@@ -238,6 +238,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import PaymentHistoryTableComponent from '@/client/components/payment/payment-history-table.component.vue';
+import { paymentMethodsService } from '@/client/services/payment-methods.service';
+import { paymentsService } from '@/client/services/payments.service';
+import { useToast } from '@/shared/composables/useToast';
+
+const { success, error, warning } = useToast();
 
 const loading = ref(true);
 const loadingPayments = ref(true);
@@ -260,69 +265,32 @@ const cardForm = ref({
   setDefault: false
 });
 
-const loadPaymentMethods = () => {
+const loadPaymentMethods = async () => {
   loading.value = true;
-
-  setTimeout(() => {
-    paymentMethods.value = [
-      {
-        id: 'pm_1',
-        type: 'visa',
-        last4: '4242',
-        expMonth: '12',
-        expYear: '2025',
-        isDefault: true
-      },
-      {
-        id: 'pm_2',
-        type: 'mastercard',
-        last4: '5678',
-        expMonth: '06',
-        expYear: '2026',
-        isDefault: false
-      }
-    ];
-
+  try {
+    const methods = await paymentMethodsService.getUserPaymentMethods();
+    paymentMethods.value = methods || [];
+    console.log('Métodos de pago cargados:', methods);
+  } catch (error) {
+    console.error('Error al cargar métodos de pago:', error);
+    paymentMethods.value = [];
+  } finally {
     loading.value = false;
-  }, 1000);
+  }
 };
 
-const loadPaymentHistory = () => {
+const loadPaymentHistory = async () => {
   loadingPayments.value = true;
-
-  setTimeout(() => {
-    paymentHistory.value = [
-      {
-        id: 'py_1',
-        date: '2023-10-15T14:22:00Z',
-        description: 'Alquiler Toyota Corolla',
-        method: 'visa',
-        last4: '4242',
-        amount: 250.50,
-        status: 'completed'
-      },
-      {
-        id: 'py_2',
-        date: '2023-09-05T09:45:00Z',
-        description: 'Alquiler BMW Serie 3',
-        method: 'mastercard',
-        last4: '5678',
-        amount: 320.75,
-        status: 'completed'
-      },
-      {
-        id: 'py_3',
-        date: '2023-08-12T16:30:00Z',
-        description: 'Alquiler Audi A4',
-        method: 'visa',
-        last4: '4242',
-        amount: 280.00,
-        status: 'refunded'
-      }
-    ];
-
+  try {
+    const history = await paymentsService.getPaymentHistory();
+    paymentHistory.value = history || [];
+    console.log('Historial de pagos cargado:', history);
+  } catch (error) {
+    console.error('Error al cargar historial de pagos:', error);
+    paymentHistory.value = [];
+  } finally {
     loadingPayments.value = false;
-  }, 1200);
+  }
 };
 
 const getCardIcon = (type) => {
@@ -330,7 +298,8 @@ const getCardIcon = (type) => {
     visa: 'pi pi-credit-card text-blue-500',
     mastercard: 'pi pi-credit-card text-red-500',
     amex: 'pi pi-credit-card text-purple-500',
-    discover: 'pi pi-credit-card text-orange-500'
+    discover: 'pi pi-credit-card text-orange-500',
+    credit_card: 'pi pi-credit-card text-gray-500'
   };
 
   return icons[type] || 'pi pi-credit-card text-gray-500';
@@ -364,9 +333,9 @@ const formatDate = (dateString) => {
 };
 
 const formatPrice = (price) => {
-  return new Intl.NumberFormat('es-ES', {
+  return new Intl.NumberFormat('es-PE', {
     style: 'currency',
-    currency: 'EUR'
+    currency: 'PEN'
   }).format(price);
 };
 
@@ -413,49 +382,55 @@ const editPaymentMethod = (method) => {
   showAddCardModal.value = true;
 };
 
-const saveCard = () => {
+const saveCard = async () => {
   if (!cardForm.value.name) {
-    alert('Por favor, introduce el nombre en la tarjeta');
+    warning('Por favor, introduce el nombre en la tarjeta');
+    return;
+  }
+
+  if (!cardForm.value.number || !cardForm.value.expMonth || !cardForm.value.expYear || !cardForm.value.cvv) {
+    warning('Por favor, completa todos los campos de la tarjeta');
     return;
   }
 
   isSaving.value = true;
 
-  setTimeout(() => {
+  try {
+    const cardData = {
+      type: 'credit_card',
+      cardNumber: cardForm.value.number,
+      cardHolder: cardForm.value.name,
+      cardExpiry: `${cardForm.value.expMonth}/${cardForm.value.expYear}`,
+      setAsDefault: cardForm.value.setDefault
+    };
+
     if (editingCard.value) {
-      const index = paymentMethods.value.findIndex(m => m.id === cardForm.value.id);
-      if (index !== -1) {
-        paymentMethods.value[index].expMonth = cardForm.value.expMonth;
-        paymentMethods.value[index].expYear = cardForm.value.expYear;
-
-        if (cardForm.value.setDefault && !paymentMethods.value[index].isDefault) {
-          paymentMethods.value.forEach(m => m.isDefault = false);
-          paymentMethods.value[index].isDefault = true;
-        }
-      }
+      await paymentMethodsService.updatePaymentMethod(cardForm.value.id, {
+        cardExpiry: cardData.cardExpiry,
+        setAsDefault: cardData.setAsDefault
+      });
+      success('Tarjeta actualizada correctamente');
     } else {
-      const last4 = cardForm.value.number.replace(/\D/g, '').slice(-4);
-      const newCard = {
-        id: 'pm_' + Date.now(),
-        type: 'visa',
-        last4,
-        expMonth: cardForm.value.expMonth,
-        expYear: cardForm.value.expYear,
-        isDefault: cardForm.value.setDefault
-      };
-
-      if (newCard.isDefault) {
-        paymentMethods.value.forEach(m => m.isDefault = false);
-      } else if (paymentMethods.value.length === 0) {
-        newCard.isDefault = true;
-      }
-
-      paymentMethods.value.push(newCard);
+      await paymentMethodsService.createPaymentMethod(cardData);
+      success('Tarjeta agregada correctamente');
     }
 
-    isSaving.value = false;
+    await loadPaymentMethods(); // Recargar la lista
     closeCardModal();
-  }, 1500);
+  } catch (err) {
+    console.error('Error al guardar tarjeta:', err);
+    
+    // Manejo de errores más específico
+    if (err.response && err.response.data && err.response.data.message) {
+      error(`Error: ${err.response.data.message}`);
+    } else if (err.message) {
+      error(`Error: ${err.message}`);
+    } else {
+      error('Error al guardar la tarjeta. Por favor, intenta nuevamente.');
+    }
+  } finally {
+    isSaving.value = false;
+  }
 };
 
 const confirmDeletePaymentMethod = (id) => {
@@ -463,37 +438,43 @@ const confirmDeletePaymentMethod = (id) => {
   showDeleteConfirmation.value = true;
 };
 
-const deletePaymentMethod = () => {
+const deletePaymentMethod = async () => {
   if (!cardToDeleteId.value) return;
 
   isDeleting.value = true;
 
-  setTimeout(() => {
-    const index = paymentMethods.value.findIndex(m => m.id === cardToDeleteId.value);
-
-    if (index !== -1) {
-      const wasDefault = paymentMethods.value[index].isDefault;
-
-      paymentMethods.value.splice(index, 1);
-
-      if (wasDefault && paymentMethods.value.length > 0) {
-        paymentMethods.value[0].isDefault = true;
-      }
-    }
-
-    isDeleting.value = false;
+  try {
+    await paymentMethodsService.deletePaymentMethod(cardToDeleteId.value);
+    await loadPaymentMethods(); // Recargar la lista
     showDeleteConfirmation.value = false;
     cardToDeleteId.value = null;
-  }, 1000);
+    success('Método de pago eliminado correctamente');
+  } catch (err) {
+    console.error('Error al eliminar método de pago:', err);
+    
+    if (err.response && err.response.data && err.response.data.message) {
+      error(`Error: ${err.response.data.message}`);
+    } else {
+      error('Error al eliminar el método de pago. Por favor, intenta nuevamente.');
+    }
+  } finally {
+    isDeleting.value = false;
+  }
 };
 
-const setDefaultPaymentMethod = (id) => {
-  const index = paymentMethods.value.findIndex(m => m.id === id);
-
-  if (index !== -1) {
-    paymentMethods.value.forEach(m => m.isDefault = false);
-
-    paymentMethods.value[index].isDefault = true;
+const setDefaultPaymentMethod = async (id) => {
+  try {
+    await paymentMethodsService.setDefaultPaymentMethod(id);
+    await loadPaymentMethods(); // Recargar la lista
+    success('Método de pago establecido como predeterminado');
+  } catch (err) {
+    console.error('Error al establecer método predeterminado:', err);
+    
+    if (err.response && err.response.data && err.response.data.message) {
+      error(`Error: ${err.response.data.message}`);
+    } else {
+      error('Error al establecer como predeterminado. Por favor, intenta nuevamente.');
+    }
   }
 };
 

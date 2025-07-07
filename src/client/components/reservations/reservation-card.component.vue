@@ -18,9 +18,10 @@
     <div class="p-4 md:flex">
       <div class="md:w-1/3 mb-4 md:mb-0 md:pr-4">
         <img
-            :src="reservation.vehicle.imageUrl"
-            :alt="reservation.vehicle.model"
+            :src="getVehicleImage(reservation.vehicle)"
+            :alt="`${reservation.vehicle.brand} ${reservation.vehicle.model}`"
             class="rounded-xl w-full h-40 object-cover"
+            @error="handleImageError"
         >
       </div>
 
@@ -186,6 +187,7 @@ const statusLabel = computed(() => {
 const paymentStatusClass = computed(() => {
   const classes = {
     paid: 'text-green-600 dark:text-green-400',
+    completed: 'text-green-600 dark:text-green-400', // Sinónimo de paid
     pending: 'text-yellow-600 dark:text-yellow-400',
     refunded: 'text-blue-600 dark:text-blue-400',
     failed: 'text-red-600 dark:text-red-400'
@@ -197,6 +199,7 @@ const paymentStatusClass = computed(() => {
 const paymentStatusLabel = computed(() => {
   const labels = {
     paid: 'Pago completado',
+    completed: 'Pago completado', // Sinónimo de paid
     pending: 'Pago pendiente',
     refunded: 'Reembolsado',
     failed: 'Pago fallido'
@@ -245,9 +248,9 @@ const formatDate = (dateString) => {
 };
 
 const formatPrice = (price) => {
-  return new Intl.NumberFormat('es-ES', {
+  return new Intl.NumberFormat('es-PE', {
     style: 'currency',
-    currency: 'EUR'
+    currency: 'PEN'
   }).format(price);
 };
 
@@ -258,5 +261,38 @@ const confirmCancel = () => {
 const cancelReservation = () => {
   emit('cancel', props.reservation.id);
   showCancelModal.value = false;
+};
+
+const getVehicleImage = (vehicle) => {
+  console.log('Obteniendo imagen para vehículo:', vehicle);
+
+  // Verificar si el vehículo tiene imágenes procesadas correctamente
+  if (vehicle && vehicle.images && Array.isArray(vehicle.images) && vehicle.images.length > 0) {
+    console.log('Usando primera imagen del array:', vehicle.images[0]);
+    return vehicle.images[0]; // Usar la primera imagen
+  }
+  
+  // Si tiene imageUrl (formato legacy)
+  if (vehicle && vehicle.imageUrl) {
+    console.log('Usando imageUrl legacy:', vehicle.imageUrl);
+    return vehicle.imageUrl;
+  }
+  
+  // Imagen por defecto que SÍ existe en public/images/
+  console.log('Usando imagen por defecto');
+  return '/images/default-vehicle.jpg';
+};
+
+const handleImageError = (event) => {
+  console.error('Error al cargar imagen:', event.target.src);
+
+  // Intentar con diferentes imágenes de fallback
+  if (event.target.src.includes('/images/default-vehicle.jpg')) {
+    // Si la imagen por defecto falla, usar un placeholder SVG inline
+    event.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200"%3E%3Crect width="400" height="200" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial, sans-serif" font-size="16" fill="%236b7280" text-anchor="middle" dy=".3em"%3EVehículo%3C/text%3E%3C/svg%3E';
+  } else {
+    // Si la imagen del backend falla, usar la imagen por defecto
+    event.target.src = '/images/default-vehicle.jpg';
+  }
 };
 </script>

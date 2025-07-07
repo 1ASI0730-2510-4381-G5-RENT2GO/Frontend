@@ -91,7 +91,10 @@ function formatDate(dateString) {
 }
 
 function formatCurrency(amount) {
-  return amount.toFixed(2) + ' €'
+  return new Intl.NumberFormat('es-PE', {
+    style: 'currency',
+    currency: 'PEN'
+  }).format(amount);
 }
 
 function getStatusLabel(status) {
@@ -116,3 +119,4 @@ function getStatusClass(status) {
   return classes[status] || 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
 }
 </script>
+

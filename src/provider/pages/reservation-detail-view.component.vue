@@ -79,12 +79,17 @@
               </h2>
 
               <div class="flex items-start">
-                <img
-                    :src="reservation.vehicle?.imageUrl || '/img/car-placeholder.jpg'"
-                    :alt="reservation.vehicle?.model"
-                    class="w-32 h-24 object-cover rounded-xl mr-4">
+                <!-- Imagen del vehículo mejorada -->
+                <div class="w-40 h-32 rounded-xl overflow-hidden bg-gray-200 dark:bg-gray-700 shadow-sm mr-4 flex-shrink-0">
+                  <img 
+                      :src="getVehicleImage(reservation.vehicle)" 
+                      :alt="`${reservation.vehicle?.brand} ${reservation.vehicle?.model}`"
+                      class="w-full h-full object-cover"
+                      @error="handleImageError"
+                  />
+                </div>
 
-                <div>
+                <div class="flex-1">
                   <h3 class="font-bold text-gray-800 dark:text-gray-200">
                     {{ reservation.vehicle?.brand }} {{ reservation.vehicle?.model }}
                   </h3>
@@ -435,7 +440,11 @@ const getReservationDetails = async () => {
   try {
     const id = route.params.id;
     const response = await reservationService.getReservationById(id);
-    reservation.value = response;
+    
+    // Normalizar la reserva usando la misma lógica que en la lista
+    reservation.value = reservationService.normalizeReservation(response);
+    
+    console.log('Reserva normalizada en detalle:', reservation.value);
   } catch (error) {
     console.error('Error al obtener detalles de la reserva:', error);
   }
@@ -540,4 +549,38 @@ const completeRental = async () => {
 onMounted(() => {
   getReservationDetails();
 });
+
+// Funciones para manejar imágenes (copiadas de las tarjetas que funcionan)
+const getVehicleImage = (vehicle) => {
+  console.log('Obteniendo imagen para vehículo en detalle:', vehicle);
+
+  // Verificar si el vehículo tiene imágenes procesadas correctamente
+  if (vehicle && vehicle.images && Array.isArray(vehicle.images) && vehicle.images.length > 0) {
+    console.log('Usando primera imagen del array:', vehicle.images[0]);
+    return vehicle.images[0]; // Usar la primera imagen
+  }
+  
+  // Si tiene imageUrl (formato legacy)
+  if (vehicle && vehicle.imageUrl) {
+    console.log('Usando imageUrl legacy:', vehicle.imageUrl);
+    return vehicle.imageUrl;
+  }
+  
+  // Imagen por defecto que SÍ existe en el backend
+  console.log('Usando imagen por defecto');
+  return '/images/default-vehicle.jpg';
+};
+
+const handleImageError = (event) => {
+  console.error('Error al cargar imagen en detalle:', event.target.src);
+
+  // Intentar con diferentes imágenes de fallback
+  if (event.target.src.includes('/images/default-vehicle.jpg')) {
+    // Si la imagen por defecto falla, usar un placeholder SVG inline
+    event.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200"%3E%3Crect width="400" height="200" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial, sans-serif" font-size="16" fill="%236b7280" text-anchor="middle" dy=".3em"%3EVehículo%3C/text%3E%3C/svg%3E';
+  } else {
+    // Si la imagen del backend falla, usar la imagen por defecto
+    event.target.src = '/images/default-vehicle.jpg';
+  }
+};
 </script>

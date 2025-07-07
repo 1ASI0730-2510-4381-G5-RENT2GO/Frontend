@@ -114,21 +114,21 @@
 
       <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          {{ $t('client.search.filters.max_price') }}: {{ filters.maxPrice ? `${filters.maxPrice}€` : $t('common.no_limit') }}
+          {{ $t('client.search.filters.max_price') }}: {{ filters.maxPrice ? `S/ ${filters.maxPrice}` : $t('common.no_limit') }}
         </label>
         <div class="px-2">
           <input
               v-model="filters.maxPrice"
               type="range"
               min="0"
-              max="200"
-              step="5"
+              max="1000"
+              step="50"
               class="w-full"
               @change="emitChange"
           />
           <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-            <span>0€</span>
-            <span>200€</span>
+            <span>S/ 0</span>
+            <span>S/ 1000</span>
           </div>
         </div>
       </div>

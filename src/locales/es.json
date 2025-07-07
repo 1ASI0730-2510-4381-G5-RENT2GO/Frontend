@@ -286,7 +286,8 @@
         "paid": "Pago completado",
         "pending": "Pago pendiente",
         "refunded": "Reembolsado",
-        "failed": "Pago fallido"
+        "failed": "Pago fallido",
+        "completed": "Pago completado"
       },
       "actions": {
         "cancel": "Cancelar",

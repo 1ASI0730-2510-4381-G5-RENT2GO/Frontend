@@ -72,7 +72,7 @@
 
               <div class="flex mt-4 justify-end">
                 <router-link
-                    :to="{ name: 'car-detail', params: { id: car.id }, query: { pickupDate: filters.pickupDate, returnDate: filters.returnDate } }"
+                    :to="{ name: 'vehicle-detail', params: { id: car.id }, query: { pickupDate: filters.pickupDate, returnDate: filters.returnDate } }"
                     class="bg-primary-600 hover:bg-primary-700 text-white py-2 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors text-sm font-medium"
                 >
                   {{ $t('client.search.view_details') }}
@@ -245,7 +245,7 @@ const resetFilters = () => {
 };
 
 const formatPrice = (price) => {
-  return new Intl.NumberFormat('es-ES', {
+  return new Intl.NumberFormat('es-PE', {
     style: 'currency',
     currency: 'PEN'
   }).format(price);

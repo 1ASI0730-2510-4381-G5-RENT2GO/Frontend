@@ -22,6 +22,13 @@
 
     <div v-else class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
       <div class="relative">
+        <button
+          @click="goBack"
+          class="absolute top-4 left-4 z-10 bg-white/80 dark:bg-gray-800/80 p-2 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-colors"
+        >
+          <i class="pi pi-arrow-left text-gray-600 dark:text-gray-300 text-xl"></i>
+        </button>
+
         <img
             :src="selectedImage || (car.images && car.images.length > 0 ? car.images[0] : '/img/car-placeholder.jpg')"
             :alt="`${car.brand} ${car.model}`"
@@ -40,7 +47,7 @@
 
         <button
             @click="toggleFavorite"
-            class="absolute top-4 left-4 bg-white/80 dark:bg-gray-800/80 p-2 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-colors"
+            class="absolute top-4 left-16 bg-white/80 dark:bg-gray-800/80 p-2 rounded-full hover:bg-white dark:hover:bg-gray-700 transition-colors"
         >
           <i :class="[
             car.isFavorite ? 'pi pi-heart-fill text-red-500' : 'pi pi-heart text-gray-600 dark:text-gray-300',
@@ -469,6 +476,10 @@ const proceedToCheckout = () => {
       returnDate: bookingDetails.value.returnDate
     }
   });
+};
+
+const goBack = () => {
+  router.back();
 };
 
 onMounted(() => {

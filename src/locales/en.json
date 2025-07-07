@@ -286,7 +286,8 @@
         "paid": "Payment completed",
         "pending": "Payment pending",
         "refunded": "Refunded",
-        "failed": "Payment failed"
+        "failed": "Payment failed",
+        "completed": "Payment completed"
       },
       "actions": {
         "cancel": "Cancel",

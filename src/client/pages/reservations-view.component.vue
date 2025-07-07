@@ -54,7 +54,7 @@
             {{ $t(`client.reservations.empty_states.${activeTab}.description`) }}
           </p>
           <router-link
-              to="/search"
+              to="/client/search"
               class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
           >
             {{ $t('client.reservations.explore_vehicles') }}
@@ -78,6 +78,7 @@ import { ref, computed, onMounted } from 'vue';
 import ReservationCardComponent from '@/client/components/reservations/reservation-card.component.vue';
 import ReviewModalComponent from '@/client/components/vehicles/review-modal.component.vue';
 import { useRouter } from 'vue-router';
+import { reservationsService } from '@/client/services/reservations.service';
 
 const router = useRouter();
 
@@ -87,6 +88,7 @@ const activeTab = ref('all');
 const showReviewModal = ref(false);
 const selectedReservation = ref({});
 const selectedVehicle = ref({});
+const error = ref(false);
 
 const tabs = [
   { id: 'all' },
@@ -96,118 +98,39 @@ const tabs = [
   { id: 'cancelled' }
 ];
 
-const getVehicleImage = (vehicleType) => {
-  const defaultIcon = 'pi pi-car';
-  return defaultIcon;
-};
-
 const loadReservations = async () => {
   loading.value = true;
+  error.value = false;
 
-  setTimeout(() => {
-    reservations.value = [
-      {
-        id: 'RES-1234',
-        status: 'confirmed',
-        paymentStatus: 'paid',
-        bookingDate: '2023-10-15',
-        pickupDate: '2023-11-20',
-        returnDate: '2023-11-25',
-        location: 'Madrid - Aeropuerto',
-        totalPrice: 350,
-        reviewed: false,
-        vehicle: {
-          id: 1,
-          brand: 'Toyota',
-          model: 'Corolla',
-          imageIcon: 'pi pi-car text-blue-500'
-        },
-        extras: [
-          { id: 1, name: 'Seguro a todo riesgo' },
-          { id: 2, name: 'GPS' }
-        ]
-      },
-      {
-        id: 'RES-5678',
-        status: 'in_progress',
-        paymentStatus: 'paid',
-        bookingDate: '2023-10-20',
-        pickupDate: '2023-11-01',
-        returnDate: '2023-11-08',
-        location: 'Barcelona - Estación Sants',
-        totalPrice: 420,
-        reviewed: false,
-        vehicle: {
-          id: 2,
-          brand: 'Volkswagen',
-          model: 'Golf',
-          imageIcon: 'pi pi-car text-green-500'
-        },
-        extras: [
-          { id: 3, name: 'Asiento infantil' }
-        ]
-      },
-      {
-        id: 'RES-9012',
-        status: 'completed',
-        paymentStatus: 'paid',
-        bookingDate: '2023-09-05',
-        pickupDate: '2023-09-10',
-        returnDate: '2023-09-15',
-        location: 'Valencia - Centro',
-        totalPrice: 275,
-        reviewed: true,
-        vehicle: {
-          id: 3,
-          brand: 'Audi',
-          model: 'A4',
-          imageIcon: 'pi pi-car text-red-500'
-        },
-        extras: []
-      },
-      {
-        id: 'RES-3456',
-        status: 'cancelled',
-        paymentStatus: 'refunded',
-        bookingDate: '2023-08-20',
-        pickupDate: '2023-09-01',
-        returnDate: '2023-09-05',
-        location: 'Sevilla - Santa Justa',
-        totalPrice: 220,
-        reviewed: false,
-        vehicle: {
-          id: 4,
-          brand: 'BMW',
-          model: 'Serie 3',
-          imageIcon: 'pi pi-car text-purple-500'
-        },
-        extras: []
-      },
-      {
-        id: 'RES-7890',
-        status: 'completed',
-        paymentStatus: 'paid',
-        bookingDate: '2023-07-10',
-        pickupDate: '2023-07-15',
-        returnDate: '2023-07-20',
-        location: 'Málaga - Aeropuerto',
-        totalPrice: 245,
-        reviewed: false,
-        vehicle: {
-          id: 5,
-          brand: 'Mercedes',
-          model: 'Clase C',
-          imageIcon: 'pi pi-car text-gray-500'
-        },
-        extras: [
-          { id: 2, name: 'GPS' },
-          { id: 4, name: 'Conductor adicional' }
-        ]
-      }
-    ];
+  try {
+    console.log('Cargando reservaciones del backend...');
 
+    // Obtener todas las reservaciones del usuario
+    let reservationsData = await reservationsService.getMyReservations();
+
+    // Manejar diferentes formatos de respuesta del backend
+    if (reservationsData && reservationsData.$values) {
+      reservationsData = reservationsData.$values;
+    } else if (!Array.isArray(reservationsData)) {
+      reservationsData = [];
+    }
+
+    // Normalizar los datos de cada reservación
+    reservations.value = reservationsData.map(reservation =>
+      reservationsService.normalizeReservation(reservation)
+    );
+
+    console.log('Reservaciones cargadas:', reservations.value);
+
+  } catch (err) {
+    console.error('Error al cargar reservaciones:', err);
+    error.value = true;
+
+    // No usar datos de ejemplo - mostrar la lista vacía si hay error
+    reservations.value = [];
+  } finally {
     loading.value = false;
-  }, 1000);
+  }
 };
 
 const filteredReservations = computed(() => {
@@ -248,11 +171,27 @@ const getReservationCount = (tabId) => {
   }).length;
 };
 
-const handleCancelReservation = (id) => {
-  const index = reservations.value.findIndex(res => res.id === id);
-  if (index !== -1) {
-    reservations.value[index].status = 'cancelled';
-    reservations.value[index].paymentStatus = 'refunded';
+const handleCancelReservation = async (id) => {
+  try {
+    loading.value = true;
+
+    // Cancelar en el backend
+    await reservationsService.cancelReservation(id, 'Cancelado por el usuario');
+
+    // Actualizar estado local
+    const index = reservations.value.findIndex(res => res.id === id);
+    if (index !== -1) {
+      reservations.value[index].status = 'cancelled';
+      reservations.value[index].paymentStatus = 'refunded';
+    }
+
+    console.log(`Reservación ${id} cancelada exitosamente`);
+
+  } catch (error) {
+    console.error('Error al cancelar reservación:', error);
+    alert('Error al cancelar la reservación. Por favor, intenta nuevamente.');
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -269,8 +208,8 @@ const handleReviewReservation = (id) => {
   }
 };
 
-const viewDetails = () => {
-  router.push(`/client/my-reservations/${props.reservation.id}`);
+const handleViewDetails = (id) => {
+  router.push(`/client/my-reservations/${id}`);
 };
 
 const handleReviewSubmit = (reviewData) => {
@@ -280,6 +219,8 @@ const handleReviewSubmit = (reviewData) => {
   if (index !== -1) {
     reservations.value[index].reviewed = true;
   }
+
+  showReviewModal.value = false;
 };
 
 onMounted(() => {
