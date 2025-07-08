@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5239/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://rent2go-backend.onrender.com/api';
 
 const authAPI = axios.create({
     baseURL: `${API_BASE_URL}/auth`,
@@ -504,5 +504,4 @@ export default {
     verifyCode,
     uploadProfileImage
 };
-
 

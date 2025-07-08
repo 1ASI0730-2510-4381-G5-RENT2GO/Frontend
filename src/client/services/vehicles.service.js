@@ -4,7 +4,7 @@ import { createApiService } from '../../shared/services/api.service';
 const clientAPI = createApiService('client');
 
 // URL base del backend para construir URLs completas de imágenes
-const baseUrl = 'http://localhost:5239';
+const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'https://rent2go-backend.onrender.com';
 
 /**
  * Servicio para la búsqueda y gestión de vehículos disponibles para clientes

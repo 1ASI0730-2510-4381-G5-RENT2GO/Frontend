@@ -219,7 +219,7 @@ export const reservationsService = {
         }
 
         // Construir URL completa usando la base del backend
-        const baseUrl = 'http://localhost:5239';
+        const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'https://rent2go-backend.onrender.com';
         const cleanPath = path.startsWith('/') ? path : `/${path}`;
         return `${baseUrl}${cleanPath}`;
     }
